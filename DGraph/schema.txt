@@ -1,0 +1,19 @@
+type Product {
+    id:
+    name:
+    price:
+}
+
+type Buyer {
+    id: 
+    name:
+    age:
+}
+
+type Transaction {
+    id
+    buyer_id
+    ip
+    device
+    product_ids
+}
