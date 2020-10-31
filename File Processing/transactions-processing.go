@@ -21,6 +21,18 @@ func check(e error) {
 	}
 }
 
+func replaceInvalid(input []byte) []byte {
+	var output []byte
+	for _, b := range input {
+		if b == 0 {
+			output = append(output, byte('$'))
+		} else {
+			output = append(output, b)
+		}
+	}
+	return output
+}
+
 func removeEmpties(input []string) []string {
 	var output []string
 	for _, element := range input {
@@ -34,6 +46,8 @@ func removeEmpties(input []string) []string {
 func main() {
 	file, err := ioutil.ReadFile("transactions.txt")
 	check(err)
+
+	file = replaceInvalid(file)
 	transactionStrings := strings.Split(string(file), "#")
 	transactionStrings = removeEmpties(transactionStrings)
 

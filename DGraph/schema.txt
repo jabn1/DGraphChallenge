@@ -1,19 +1,22 @@
 type Product {
-    id:
-    name:
-    price:
+    id: String! @id
+    name: String!
+    price: String!
+    date: DateTime!
 }
 
 type Buyer {
-    id: 
-    name:
-    age:
+    id: String! @id
+    name: String!
+    age: Int!
+    date: DateTime!
 }
 
 type Transaction {
-    id
-    buyer_id
-    ip
-    device
-    product_ids
+    id: String! @id
+    buyer_id: String! @search(by: [exact])
+    ip: String! @search(by: [exact])
+    device: String!
+    product_ids: [String]! 
+    date: DateTime!
 }
