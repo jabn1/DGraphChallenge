@@ -1,0 +1,54 @@
+{
+    "set": {
+      "date": {
+          "year": 2020,
+          "month": 11,
+          "day": 23,
+          "dayproducts": [
+              {
+                                "uid": "_:p1",
+                  "id": "5606f841",
+                  "name": "Southwest vegetable soup",
+                  "price": 7408
+              },
+              {
+                    "uid": "_:p2",
+                  "id": "e432ddca",
+                  "name": "Chicken stock",
+                  "price": 9112
+              },
+              {
+                    "uid": "_:p3",
+                  "id": "7c8bf4b4",
+                  "name": "Seasoned white meat pulled chicken with bbq sauce",
+                  "price": 7171
+                }
+          ],
+          "daytransactions": [
+              {
+                  "id": "00005f98b480",
+                  "buyer": {"uid": "_:b1"},
+                  "ip": "9.183.170.122",
+                  "device": "windows",
+                  "products": [
+                    {"uid": "_:p1"}
+                  ]
+                },
+                {
+                  "id": "00005f98b481",
+                  "buyer": {"uid": "_:b1"},
+                  "ip": "95.183.100.154",
+                  "device": "android",
+                  "products": [
+                    {"uid": "_:p2"},
+                    {"uid": "_:p3"}
+                  ]
+                }
+          ],
+          "daybuyers": [
+              {"uid": "_:b1","id":"969fe13","name":"Noel","age":73},
+              {"uid": "_:b2","id":"e259ef7b","name":"Hazen","age":43}
+          ]
+      }
+    }
+}

@@ -1,0 +1,46 @@
+{
+    set {
+        _:date <year> 2020 .
+        _:date <month> 11 .
+        _:date <day> 23 .
+        _:date <dgraph.type> "Date" .
+
+        _:buyer1 <id> "969fe13" .
+        _:buyer1 <name> "Noel" .
+        _:buyer1 <age> 73 .
+        _:buyer1 <dgraph.type> "Buyer" .
+        _:buyer1 <date> _:date .
+
+        _:buyer2 <id> "e259ef7b" .
+        _:buyer2 <name> "Hazen" .
+        _:buyer2 <age> 43 .
+        _:buyer2 <dgraph.type> "Buyer" .
+        _:buyer2 <date> _:date .
+
+        _:product1 <id> "5606f841" .
+        _:product1 <name> "Southwest vegetable soup" .
+        _:product1 <price> 7408 .
+        _:product1 <dgraph.type> "Product" .
+        _:product1 <date> _:date .
+
+        _:product2 <id> "e432ddca" .
+        _:product2 <name> "Chicken stock" .
+        _:product2 <price> 9112 .
+        _:product2 <dgraph.type> "Product" .
+        _:product2 <date> _:date .
+
+        _:product3 <id> "7c8bf4b4" .
+        _:product3 <name> "Seasoned white meat pulled chicken with bbq sauce" .
+        _:product3 <price> 7171 .
+        _:product3 <dgraph.type> "Product" .
+        _:product3 <date> _:date .
+
+        _:transaction1 <> "" .
+        _:transaction1 <> "" .
+        _:transaction1 <> "" .
+        _:transaction1 <> "" .
+        _:transaction1 <date> _:date .
+        _:transaction1 <dgraph.type> "Transaction" .
+
+    }
+}
