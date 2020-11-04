@@ -1,6 +1,6 @@
 {
     "set": {
-      "date": {
+      "businessday": {
           "year": 2020,
           "month": 11,
           "day": 23,
@@ -26,6 +26,7 @@
           ],
           "daytransactions": [
               {
+                
                   "id": "00005f98b480",
                   "buyer": {"uid": "_:b1"},
                   "ip": "9.183.170.122",
