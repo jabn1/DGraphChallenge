@@ -1,4 +1,7 @@
-package main
+package data
+
+//These structs are used to insert the data into the DGraph database
+
 
 type Entity struct {
 	UID string `json:"uid"`

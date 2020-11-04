@@ -1,6 +1,6 @@
-package main
+package data
 
-package main
+//this group of functions is responsible for performing queries and mutations in the DGraph database
 
 import (
 	"context"
@@ -13,7 +13,6 @@ import (
     
 	"google.golang.org/grpc"
 )
-
 
 func SendQuery(query string) {
     var dgraph = flag.String("d", "127.0.0.1:9080", "Dgraph Alpha address")

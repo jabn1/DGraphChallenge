@@ -1,4 +1,6 @@
-package main
+package data
+
+//these are the DTOs for the API functions
 
 type Status struct {
     Success bool `json:"success"`
@@ -14,14 +16,14 @@ type BuyerDTO struct {
     Age string `json:"age"`
 }
 
-type BuyerHistoryDTO {
+type BuyerHistoryDTO struct {
     Buyer BuyerDTO `json:"buyer"`
     Transactions []TransactionDTO `json:"transactions"`
     OtherBuyers []BuyerDTO `json:"otherbuyers"`
     RecommendedProducts []ProductDTO `json:"recommendedproducts"`
 }
 
-type TransactionDTO {
+type TransactionDTO struct {
     ID string `json:"id"`
     IP string `json:"ip"`
     Device string `json:"device"`
@@ -31,7 +33,7 @@ type TransactionDTO {
     Products []ProductDTO `json:"products"`
 }
 
-type ProductDTO {
+type ProductDTO struct {
     ID string `json:"id"`
     Name string `json:"name"`
     Price int `json:"price"`
