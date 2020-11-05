@@ -8,12 +8,14 @@ type Entity struct {
 }
 
 type Product struct {
+    UID string `json:"uid"`
 	ID    string `json:"id"`
 	Name  string `json:"name"`
 	Price int    `json:"price"`
 }
 
 type Buyer struct {
+    UID string `json:"uid"`
 	ID   string `json:"id"`
 	Name string `json:"name"`
 	Age  int    `json:"age"`
@@ -21,7 +23,7 @@ type Buyer struct {
 
 type Transaction struct {
 	ID       string   `json:"id"`
-	Buyer    Entity   `json:"buyerId"`
+	Buyer    Entity   `json:"buyer"`
 	IP       string   `json:"ip"`
 	Device   string   `json:"device"`
 	Products []Entity `json:"products"`
