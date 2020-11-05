@@ -46,22 +46,34 @@ func GetDayData(timestamp int64) *BusinessDay {
 	productsMap := make(map[string]Entity) //key: id, value: uid
 
 	for i := 0; i < len(*buyers); i++ {
-		uid := "buyer" + string(i)
+		uid := "_:buyer" + strconv.Itoa(i)
 		(*buyers)[i].UID = uid
 		buyersMap[(*buyers)[i].ID] = Entity{UID: uid}
 	}
 
 	for i := 0; i < len(*products); i++ {
-		uid := "product" + string(i)
+		uid := "_:product" + strconv.Itoa(i)
 		(*products)[i].UID = uid
 		productsMap[(*products)[i].ID] = Entity{UID: uid}
 	}
+
+	var transactions []Transaction
+	for _, t := range *rawTran {
+		var productEntities []Entity
+		for _, id := range t.ProductIds {
+			productEntities = append(productEntities, productsMap[id])
+		}
+		transaction := Transaction{ID: t.ID, IP: t.IP, Device: t.Device, Buyer: buyersMap[t.BuyerID], Products: productEntities}
+		transactions = append(transactions, transaction)
+	}
+
+	businessDay.DayTransactions = transactions
 
 	return &businessDay
 }
 
 func getDataProducts(timestamp int64) *[]Product {
-	response, err := http.Get(baseAPIURL + "/products?date=" + string(timestamp))
+	response, err := http.Get(baseAPIURL + "/products?date=" + strconv.FormatInt(timestamp, 10))
 	if err != nil {
 		log.Println(err)
 		return nil
@@ -94,19 +106,24 @@ func getDataProducts(timestamp int64) *[]Product {
 }
 
 func getDataBuyers(timestamp int64) *[]Buyer {
-	response, err := http.Get(baseAPIURL + "/buyers?date=" + string(timestamp))
+	response, err := http.Get(baseAPIURL + "/buyers?date=" + strconv.FormatInt(timestamp, 10))
 	if err != nil {
 		log.Println(err)
 		return nil
 	}
 	buyersBytes, _ := ioutil.ReadAll(response.Body)
+
 	var buyers []Buyer
-	json.Unmarshal(buyersBytes, &buyers)
+	err = json.Unmarshal(buyersBytes, &buyers)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
 	return &buyers
 }
 
 func getDataTransactions(timestamp int64) *[]rawTransaction {
-	response, err := http.Get(baseAPIURL + "/transactions?date=" + string(timestamp))
+	response, err := http.Get(baseAPIURL + "/transactions?date=" + strconv.FormatInt(timestamp, 10))
 	if err != nil {
 		log.Println(err)
 		return nil
