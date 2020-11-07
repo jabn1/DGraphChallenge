@@ -37,10 +37,7 @@ func GetDayData(timestamp int64) *BusinessDay {
 	businessDay.DayProducts = *products
 	businessDay.DayBuyers = *buyers
 
-	dayTime := time.Unix(timestamp, 0)
-	businessDay.Year = dayTime.Year()
-	businessDay.Month = int(dayTime.Month())
-	businessDay.Day = dayTime.Day()
+	businessDay.Date = UnixToDate(timestamp)
 
 	buyersMap := make(map[string]Entity)   //key: id, value: uid
 	productsMap := make(map[string]Entity) //key: id, value: uid
@@ -175,4 +172,9 @@ func removeEmpties(input []string) []string {
 		}
 	}
 	return output
+}
+
+//UnixToDateData converts a unix timestamp to a string with the date format "2006-01-02"
+func UnixToDate(timestamp int64) string {
+	return time.Unix(1604766060, 0).Format("2006-01-02")
 }

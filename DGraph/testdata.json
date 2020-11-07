@@ -1,9 +1,7 @@
 {
     "set": {
       "businessday": {
-          "year": 2020,
-          "month": 11,
-          "day": 23,
+          "date": "2020-11-23",
           "dayproducts": [
               {
                                 "uid": "_:p1",

@@ -1,29 +1,17 @@
 package main
 
 import (
-	"bytes"
-	"io/ioutil"
+	"fmt"
 	"net/http"
-
-	"encoding/json"
 
 	"github.com/go-chi/chi"
 	restaurant "restaurant.com"
 )
 
 func main() {
-	_ = restaurant.Entity{UID: "as"} //REMOVE for debugging
-	r := restaurant.GetDayData(1603843200)
+	//_ = restaurant.Entity{UID: "as"} //REMOVE for debugging
 
-	buffer := new(bytes.Buffer)
-	encoder := json.NewEncoder(buffer)
-	encoder.SetEscapeHTML(false)
-	encoder.SetIndent("", "  ")
-
-	encoder.Encode(r)
-
-	_ = ioutil.WriteFile("thing.json", buffer.Bytes(), 0644)
-
+	fmt.Println(restaurant.WriteBusinessDay(123))
 }
 
 //route declarations
