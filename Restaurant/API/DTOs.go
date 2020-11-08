@@ -6,14 +6,10 @@ type Status struct {
 	Success bool `json:"success"`
 }
 
-type BuyersDTO struct {
-	Buyers []BuyerDTO `json:"buyers"`
-}
-
 type BuyerDTO struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
-	Age  string `json:"age"`
+	Age  int    `json:"age"`
 }
 
 type BuyerHistoryDTO struct {
@@ -35,4 +31,8 @@ type ProductDTO struct {
 	ID    string `json:"id"`
 	Name  string `json:"name"`
 	Price int    `json:"price"`
+}
+
+type DateExistsDTO struct {
+	Exists bool `json:"exists"`
 }

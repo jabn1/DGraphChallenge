@@ -29,10 +29,10 @@ func newClient() *dgo.Dgraph {
 }
 
 //QueryDateExists is used to check if a day is already loaded into the database
-func QueryDateExists(timestamp int64) bool {
+func QueryDateExists(timestamp int64) *DateExistsDTO {
 	client := newClient()
 	if client == nil {
-		return false
+		return nil
 	}
 	txn := client.NewTxn()
 	defer txn.Discard(context.Background())
@@ -48,7 +48,8 @@ func QueryDateExists(timestamp int64) bool {
 
 	resp, err := txn.Query(context.Background(), query)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return nil
 	}
 
 	var decode struct {
@@ -56,12 +57,13 @@ func QueryDateExists(timestamp int64) bool {
 	}
 
 	if err := json.Unmarshal(resp.GetJson(), &decode); err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return nil
 	}
 	if len(decode.Date) != 0 {
-		return true
+		return &DateExistsDTO{Exists: true}
 	}
-	return false
+	return &DateExistsDTO{Exists: false}
 }
 
 //WriteBusinessDay performs a DGraph mutation to load the data containing buyers, products and transactions pertaining to a day
@@ -105,10 +107,56 @@ func WriteBusinessDay(timestamp int64) bool {
 	return true
 }
 
-func QueryBuyerList() {
+//QueryBuyerList retunrs a list of all buyers with pagination parameters
+func QueryBuyerList(first int, offset int) *[]BuyerDTO {
+	client := newClient()
+	if client == nil {
+		return nil
+	}
+	txn := client.NewTxn()
+	defer txn.Discard(context.Background())
 
+	query := `
+	{
+		buyers(func: has(buyer.id),first: %d,offset: %d) {   
+			buyer.id 
+			buyer.name 
+			buyer.age
+		}
+	}
+	`
+	query = fmt.Sprintf(query, first, offset)
+
+	resp, err := txn.Query(context.Background(), query)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+
+	type rawBuyer struct {
+		ID   string `json:"buyer.id"`
+		Name string `json:"buyer.name"`
+		Age  int    `json:"buyer.age"`
+	}
+
+	var decode struct {
+		Buyers []rawBuyer `json:"buyers"`
+	}
+
+	if err := json.Unmarshal(resp.GetJson(), &decode); err != nil {
+		log.Println(err)
+		return nil
+	}
+
+	var buyers []BuyerDTO
+	for _, buyer := range decode.Buyers {
+		buyers = append(buyers, BuyerDTO{ID: buyer.ID, Name: buyer.Name, Age: buyer.Age})
+	}
+	return &buyers
 }
 
-func QueryBuyerData() {
+//QueryBuyerData returns the buyer history of the buyer with the corresponding entered id
+func QueryBuyerData(ID string) *BuyerHistoryDTO {
 
+	return nil
 }

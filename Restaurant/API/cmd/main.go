@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 
 	"net/http"
 
@@ -12,7 +13,13 @@ import (
 func main() {
 	//_ = restaurant.Entity{UID: "as"} //REMOVE for debugging
 
-	fmt.Println(restaurant.WriteBusinessDay(1603843200))
+	//fmt.Println(restaurant.WriteBusinessDay(1603843200))
+
+	bl := restaurant.QueryBuyerList(10, 20)
+	for _, b := range *bl {
+		fmt.Println("Id: " + b.ID + " - " + "Name: " + b.Name + " - " + "Age: " + strconv.Itoa(b.Age))
+	}
+
 	// buffer := new(bytes.Buffer)
 	// encoder := json.NewEncoder(buffer)
 	// encoder.SetEscapeHTML(false)
