@@ -34,37 +34,51 @@ func GetDayData(timestamp int64) *BusinessDay {
 		return nil
 	}
 
-	businessDay.DayProducts = *products
-	businessDay.DayBuyers = *buyers
+	businessDay.Products = *products
+	businessDay.Buyers = *buyers
 
-	businessDay.Date = UnixToDate(timestamp)
+	businessDay.Date = Date{Value: UnixToDate(timestamp), UID: "_:date"}
+	dateEntity := Entity{UID: "_:date"}
 
-	buyersMap := make(map[string]Entity)   //key: id, value: uid
-	productsMap := make(map[string]Entity) //key: id, value: uid
+	buyersMap := make(map[string]Entity)         //key: buyer.id, value: uid
+	productsMap := make(map[string]Entity)       //key: product.id, value: uid
+	transactionsMap := make(map[string][]Entity) //key: buyer.id, value: []uid
 
 	for i := 0; i < len(*buyers); i++ {
 		uid := "_:buyer" + strconv.Itoa(i)
 		(*buyers)[i].UID = uid
+		(*buyers)[i].Date = dateEntity
 		buyersMap[(*buyers)[i].ID] = Entity{UID: uid}
 	}
 
 	for i := 0; i < len(*products); i++ {
 		uid := "_:product" + strconv.Itoa(i)
 		(*products)[i].UID = uid
+		(*products)[i].Date = dateEntity
 		productsMap[(*products)[i].ID] = Entity{UID: uid}
 	}
 
 	var transactions []Transaction
-	for _, t := range *rawTran {
+	for i := 0; i < len(*rawTran); i++ {
+		t := (*rawTran)[i]
+
+		uid := "_:transaction" + strconv.Itoa(i)
+
+		transactionsMap[t.BuyerID] = append(transactionsMap[t.BuyerID], Entity{UID: uid})
+
 		var productEntities []Entity
 		for _, id := range t.ProductIds {
 			productEntities = append(productEntities, productsMap[id])
 		}
-		transaction := Transaction{ID: t.ID, IP: t.IP, Device: t.Device, Buyer: buyersMap[t.BuyerID], Products: productEntities}
+		transaction := Transaction{UID: uid, Date: dateEntity, ID: t.ID, IP: t.IP, Device: t.Device, Buyer: buyersMap[t.BuyerID], Products: productEntities}
 		transactions = append(transactions, transaction)
 	}
 
-	businessDay.DayTransactions = transactions
+	for i := 0; i < len(*buyers); i++ {
+		(*buyers)[i].Transactions = transactionsMap[(*buyers)[i].ID]
+	}
+
+	businessDay.Transactions = transactions
 
 	return &businessDay
 }
@@ -102,6 +116,12 @@ func getDataProducts(timestamp int64) *[]Product {
 	return &products
 }
 
+type rawBuyer struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	Age  int    `json:"age"`
+}
+
 func getDataBuyers(timestamp int64) *[]Buyer {
 	response, err := http.Get(baseAPIURL + "/buyers?date=" + strconv.FormatInt(timestamp, 10))
 	if err != nil {
@@ -110,12 +130,17 @@ func getDataBuyers(timestamp int64) *[]Buyer {
 	}
 	buyersBytes, _ := ioutil.ReadAll(response.Body)
 
-	var buyers []Buyer
-	err = json.Unmarshal(buyersBytes, &buyers)
+	var rawBuyers []rawBuyer
+	err = json.Unmarshal(buyersBytes, &rawBuyers)
 	if err != nil {
 		log.Println(err)
 		return nil
 	}
+	var buyers []Buyer
+	for _, rb := range rawBuyers {
+		buyers = append(buyers, Buyer{ID: rb.ID, Name: rb.Name, Age: rb.Age})
+	}
+
 	return &buyers
 }
 
@@ -176,5 +201,5 @@ func removeEmpties(input []string) []string {
 
 //UnixToDateData converts a unix timestamp to a string with the date format "2006-01-02"
 func UnixToDate(timestamp int64) string {
-	return time.Unix(1604766060, 0).Format("2006-01-02")
+	return time.Unix(timestamp, 0).Format("2006-01-02")
 }

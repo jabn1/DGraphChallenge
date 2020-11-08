@@ -1,53 +1,76 @@
 {
-    "set": {
-      "businessday": {
-          "date": "2020-11-23",
-          "dayproducts": [
-              {
-                                "uid": "_:p1",
-                  "id": "5606f841",
-                  "name": "Southwest vegetable soup",
-                  "price": 7408
-              },
-              {
-                    "uid": "_:p2",
-                  "id": "e432ddca",
-                  "name": "Chicken stock",
-                  "price": 9112
-              },
-              {
-                    "uid": "_:p3",
-                  "id": "7c8bf4b4",
-                  "name": "Seasoned white meat pulled chicken with bbq sauce",
-                  "price": 7171
-                }
-          ],
-          "daytransactions": [
-              {
-                
-                  "id": "00005f98b480",
-                  "buyer": {"uid": "_:b1"},
-                  "ip": "9.183.170.122",
-                  "device": "windows",
-                  "products": [
-                    {"uid": "_:p1"}
-                  ]
-                },
-                {
-                  "id": "00005f98b481",
-                  "buyer": {"uid": "_:b1"},
-                  "ip": "95.183.100.154",
-                  "device": "android",
-                  "products": [
-                    {"uid": "_:p2"},
-                    {"uid": "_:p3"}
-                  ]
-                }
-          ],
-          "daybuyers": [
-              {"uid": "_:b1","id":"969fe13","name":"Noel","age":73},
-              {"uid": "_:b2","id":"e259ef7b","name":"Hazen","age":43}
-          ]
-      }
-    }
+    "set": {  
+      "date": {
+        "uid": "_:date",
+        "date.value": "2020-11-23"
+      },
+      "products": [
+          {
+              "uid": "_:p1",
+              "product.id": "5606f841",
+              "product.name": "Southwest vegetable soup",
+              "product.price": 7408,
+              "product.date": {"uid":"_:date"}
+          },
+          {
+              "uid": "_:p2",
+              "product.id": "e432ddca",
+              "product.name": "Chicken stock",
+              "product.price": 9112,
+              "product.date": {"uid":"_:date"}
+          },
+          {
+              "uid": "_:p3",
+              "product.id": "7c8bf4b4",
+              "product.name": "Seasoned white meat pulled chicken with bbq sauce",
+              "product.price": 7171,
+              "product.date": {"uid":"_:date"}
+            }
+      ],
+      "transactions": [
+          {
+              "uid": "_:transaction1",
+              "transaction.id": "00005f98b480",
+              "transaction.buyer": {"uid": "_:b1"},
+              "transaction.ip": "9.183.170.122",
+              "transaction.device": "windows",
+              "transaction.products": [
+                {"uid": "_:p1"}
+              ],
+              "transaction.date": {"uid":"_:date"}
+            },
+            {
+              "uid": "_:transaction2",
+              "transaction.id": "00005f98b481",
+              "transaction.buyer": {"uid": "_:b1"},
+              "transaction.ip": "95.183.100.154",
+              "transaction.device": "android",
+              "transaction.products": [
+                {"uid": "_:p2"},
+                {"uid": "_:p3"}
+              ],
+              "transaction.date": {"uid":"_:date"}
+            }
+      ],
+      "buyers": [
+          {"uid": "_:b1",
+            "buyer.id":"969fe13",
+            "buyer.name":"Noel",
+            "buyer.age":73,
+            "buyer.date": {"uid":"_:date"},
+            "buyer.transactions": [
+              {"uid":"_:transaction1"}
+            ]
+          },
+          { "uid": "_:b2",
+            "buyer.id":"e259ef7b",
+            "buyer.name":"Hazen",
+            "buyer.age":43,
+            "buyer.date": {"uid":"_:date"},
+            "buyer.transactions": [
+              {"uid":"_:transaction2"}
+            ]
+          }
+      ]
+  }
 }

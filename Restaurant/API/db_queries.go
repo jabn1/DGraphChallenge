@@ -39,12 +39,12 @@ func QueryDateExists(timestamp int64) bool {
 
 	query := `
 	{
-		day(func: eq(date,"%v")) {
+		day(func: eq(date.value,"%v")) {
 			date
 		}
 	}
 	`
-	query = fmt.Sprintf(query)
+	query = fmt.Sprintf(query, UnixToDate(timestamp))
 
 	resp, err := txn.Query(context.Background(), query)
 	if err != nil {
@@ -64,7 +64,7 @@ func QueryDateExists(timestamp int64) bool {
 	return false
 }
 
-//WriteBusinessDay performs a mutation to load the data containing buyers, products and transactions pertaining to a day
+//WriteBusinessDay performs a DGraph mutation to load the data containing buyers, products and transactions pertaining to a day
 func WriteBusinessDay(timestamp int64) bool {
 	client := newClient()
 	if client == nil {
@@ -73,33 +73,20 @@ func WriteBusinessDay(timestamp int64) bool {
 	txn := client.NewTxn()
 	defer txn.Discard(context.Background())
 
-	// dayData := GetDayData(timestamp)
-	// if dayData == nil {
-	// 	return false
-	// }
-	// dayDataJSON, err := json.Marshal(dayData)
-	// if err != nil {
-	// 	log.Println(err)
-	// 	return false
-	// }
+	dayData := GetDayData(timestamp)
+	if dayData == nil {
+		return false
+	}
+	dayDataJSON, err := json.Marshal(dayData)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
 
-	// //conditional upsert, cannot insert day data if the day already exists
-	// mutation := `{
-	// 	"query": "{ v as var(func: eq(date,\"%v"\)) }",
-	// 	"cond": "@if(eq(len(v),0))",
-	// 	"set": {
-	// 	  %v
-	// 	}
-	// }`
-	// mutation = fmt.Sprintf(mutation, dayData.Date, string(dayDataJSON))
-
-	queryS := `{ v as var(func: eq(date,"2020-11-23")) }`
+	queryS := fmt.Sprintf(`{ v as var(func: eq(date.value,"%v")) }`, dayData.Date.Value)
 	condS := "@if(eq(len(v),0))"
-	mutationS := `{
-		"testvalue": "somethingelse"
-	}`
 
-	dgMutation := api.Mutation{SetJson: []byte(mutationS), Cond: condS}
+	dgMutation := api.Mutation{SetJson: dayDataJSON, Cond: condS}
 
 	dgRequest := api.Request{Mutations: []*api.Mutation{&dgMutation}, Query: queryS}
 

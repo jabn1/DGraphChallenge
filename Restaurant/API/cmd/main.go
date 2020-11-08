@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"net/http"
 
 	"github.com/go-chi/chi"
@@ -11,7 +12,16 @@ import (
 func main() {
 	//_ = restaurant.Entity{UID: "as"} //REMOVE for debugging
 
-	fmt.Println(restaurant.WriteBusinessDay(123))
+	fmt.Println(restaurant.WriteBusinessDay(1603843200))
+	// buffer := new(bytes.Buffer)
+	// encoder := json.NewEncoder(buffer)
+	// encoder.SetEscapeHTML(false)
+	// encoder.SetIndent("", "  ")
+
+	// encoder.Encode(restaurant.GetDayData(1603843200))
+
+	// _ = ioutil.WriteFile("day.json", buffer.Bytes(), 0644)
+
 }
 
 //route declarations

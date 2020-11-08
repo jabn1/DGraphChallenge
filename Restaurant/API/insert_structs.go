@@ -6,31 +6,41 @@ type Entity struct {
 	UID string `json:"uid"`
 }
 
+type Date struct {
+	UID   string `json:"uid"`
+	Value string `json:"date.value"`
+}
+
 type Product struct {
 	UID   string `json:"uid"`
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Price int    `json:"price"`
+	ID    string `json:"product.id"`
+	Name  string `json:"product.name"`
+	Price int    `json:"product.price"`
+	Date  Entity `json:"product.date"`
 }
 
 type Buyer struct {
-	UID  string `json:"uid"`
-	ID   string `json:"id"`
-	Name string `json:"name"`
-	Age  int    `json:"age"`
+	UID          string   `json:"uid"`
+	ID           string   `json:"buyer.id"`
+	Name         string   `json:"buyer.name"`
+	Age          int      `json:"buyer.age"`
+	Date         Entity   `json:"buyer.date"`
+	Transactions []Entity `json:"buyer.transactions"`
 }
 
 type Transaction struct {
-	ID       string   `json:"id"`
-	Buyer    Entity   `json:"buyer"`
-	IP       string   `json:"ip"`
-	Device   string   `json:"device"`
-	Products []Entity `json:"products"`
+	UID      string   `json:"uid"`
+	ID       string   `json:"transaction.id"`
+	Buyer    Entity   `json:"transaction.buyer"`
+	IP       string   `json:"transaction.ip"`
+	Device   string   `json:"transaction.device"`
+	Products []Entity `json:"transaction.products"`
+	Date     Entity   `json:"transaction.date"`
 }
 
 type BusinessDay struct {
-	Date            string        `json:"date"`
-	DayProducts     []Product     `json:"dayproducts"`
-	DayBuyers       []Buyer       `json:"daybuyers"`
-	DayTransactions []Transaction `json:"daytransactions"`
+	Date         Date          `json:"date"`
+	Products     []Product     `json:"products"`
+	Buyers       []Buyer       `json:"buyers"`
+	Transactions []Transaction `json:"transactions"`
 }
