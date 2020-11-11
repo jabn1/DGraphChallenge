@@ -133,14 +133,12 @@ func QueryBuyerList(first int, offset int) *[]BuyerDTO {
 		return nil
 	}
 
-	type rawBuyer struct {
-		ID   string `json:"buyer.id"`
-		Name string `json:"buyer.name"`
-		Age  int    `json:"buyer.age"`
-	}
-
 	var decode struct {
-		Buyers []rawBuyer `json:"buyers"`
+		Buyers []struct {
+			ID   string `json:"buyer.id"`
+			Name string `json:"buyer.name"`
+			Age  int    `json:"buyer.age"`
+		} `json:"buyers"`
 	}
 
 	if err := json.Unmarshal(resp.GetJson(), &decode); err != nil {
@@ -157,6 +155,98 @@ func QueryBuyerList(first int, offset int) *[]BuyerDTO {
 
 //QueryBuyerData returns the buyer history of the buyer with the corresponding entered id
 func QueryBuyerData(ID string) *BuyerHistoryDTO {
+	client := newClient()
+	if client == nil {
+		return nil
+	}
+	txn := client.NewTxn()
+	defer txn.Discard(context.Background())
+
+	query := `{
+		buyer(func: eq(buyer.id,"%v")) {   
+		  ID AS buyer.id 
+		  buyer.name 
+		  buyer.age
+		  buyer.transactions{
+			transaction.id
+			IP AS transaction.ip
+			transaction.device
+			transaction.products{
+				product.id
+				product.name
+				product.price
+			}
+			transaction.date{
+				date.value
+			}
+					  
+			}
+		}
+		otherbuyers(func: eq(transaction.ip,val(IP))){
+		  transaction.ip
+		  transaction.buyer @filter(not eq(buyer.id,val(ID))){
+			buyer.id 
+			buyer.name
+			buyer.age
+		  }
+		  }
+		  recproducts(func: has(transaction.id),first: 5){
+			transaction.buyer @filter(not eq(buyer.id,val(ID)))
+		  transaction.products (first:1){
+			product.id
+			product.name
+			product.price
+		  }
+		  }
+	  }`
+	query = fmt.Sprintf(query, ID)
+
+	var decode struct {
+		Buyer struct {
+			ID           string `json:"buyer.id"`
+			Name         string `json:"buyer.name"`
+			Age          int    `json:"buyer.age"`
+			Transactions []struct {
+				ID       string `json:"transaction.id"`
+				IP       string `json:"transaction.ip"`
+				Device   string `json:"transaction.device"`
+				Products []struct {
+					ID    string `json:"product.id"`
+					Name  string `json:"product.name"`
+					Price int    `json:"product.price"`
+				} `json:"transaction.products"`
+				Date struct {
+					Value string `json:"date.value"`
+				} `json:"transaction.date"`
+			} `json:"buyer.transactions"`
+		} `json:"buyer"`
+		OtherBUyers []struct {
+			IP    string `json:"transaction.ip"`
+			Buyer struct {
+				ID   string `json:"buyer.id"`
+				Name string `json:"buyer.name"`
+				Age  int    `json:"buyer.age"`
+			} `json:"otherbuyers"`
+		}
+		RecProducts []struct {
+			Products []struct {
+				ID    string `json:"product.id"`
+				Name  string `json:"product.name"`
+				Price int    `json:"product.price"`
+			} `json:"transaction.products"`
+		} `json:"recproducts"`
+	}
+
+	resp, err := txn.Query(context.Background(), query)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+
+	if err := json.Unmarshal(resp.GetJson(), &decode); err != nil {
+		log.Println(err)
+		return nil
+	}
 
 	return nil
 }
