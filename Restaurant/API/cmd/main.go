@@ -62,15 +62,24 @@ func loadData(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid query parameters", 400)
 			return
 		}
-
-		status := restaurant.WriteBusinessDay(timestamp)
-		if status == nil {
-			http.Error(w, "Error while processing request", 500)
-			return
-		}
-		json.NewEncoder(w).Encode(status)
-
 	}
+
+	exists := restaurant.QueryDateExists(timestamp)
+	if exists == nil {
+		http.Error(w, "Error while processing request", 500)
+		return
+	}
+	if exists.Exists {
+		json.NewEncoder(w).Encode(restaurant.Status{Success: false})
+		return
+	}
+
+	status := restaurant.WriteBusinessDay(timestamp)
+	if status == nil {
+		http.Error(w, "Error while processing request", 500)
+		return
+	}
+	json.NewEncoder(w).Encode(status)
 
 }
 
@@ -110,9 +119,17 @@ func getBuyer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	buyerdata := restaurant.QueryBuyerData(id)
+
 	if buyerdata == nil {
 		http.Error(w, "Error while processing request", 500)
 		return
 	}
+
+	if buyerdata.Buyer.ID == "" {
+		var empty struct{}
+		json.NewEncoder(w).Encode(empty)
+		return
+	}
+
 	json.NewEncoder(w).Encode(buyerdata)
 }

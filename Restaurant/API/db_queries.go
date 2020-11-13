@@ -37,23 +37,24 @@ func QueryDateExists(timestamp int64) *DateExistsDTO {
 	txn := client.NewTxn()
 	defer txn.Discard(context.Background())
 
-	query := `
+	query := `query variables($DATE: string)
 	{
-		day(func: eq(date.value,"%v")) {
-			date
+		date(func: eq(date.value,$DATE)) {
+			date.value
 		}
 	}
 	`
-	query = fmt.Sprintf(query, UnixToDate(timestamp))
 
-	resp, err := txn.Query(context.Background(), query)
+	resp, err := txn.QueryWithVars(context.Background(), query, map[string]string{"$DATE": UnixToDate(timestamp)})
 	if err != nil {
 		log.Println(err)
 		return nil
 	}
 
 	var decode struct {
-		Date []BusinessDay
+		Date []struct {
+			Value string `json:"date.value"`
+		} `json:"date"`
 	}
 
 	if err := json.Unmarshal(resp.GetJson(), &decode); err != nil {
@@ -162,8 +163,37 @@ func QueryBuyerData(ID string) *BuyerHistoryDTO {
 	txn := client.NewTxn()
 	defer txn.Discard(context.Background())
 
-	query := `{
-		buyer(func: eq(buyer.id,"%v")) {   
+	buyerQuery := `query variables($BID: string)
+	{
+		buyer(func: eq(buyer.id,$BID)){
+			buyer.id
+		}
+	}`
+
+	var buyerDecode struct {
+		Buyer []struct {
+			ID string `json:"buyer.id"`
+		} `json:"buyer"`
+	}
+
+	buyerResp, err := txn.QueryWithVars(context.Background(), buyerQuery, map[string]string{"$BID": ID})
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+
+	if err := json.Unmarshal(buyerResp.GetJson(), &buyerDecode); err != nil {
+		log.Println(err)
+		return nil
+	}
+
+	if len(buyerDecode.Buyer) == 0 {
+		return &BuyerHistoryDTO{}
+	}
+
+	query := `query variables($BID: string)
+	{
+		buyer(func: eq(buyer.id,$BID)) {   
 		  ID AS buyer.id 
 		  buyer.name 
 		  buyer.age
@@ -197,7 +227,6 @@ func QueryBuyerData(ID string) *BuyerHistoryDTO {
 		  }
 		  }
 	  }`
-	query = fmt.Sprintf(query, ID)
 
 	var decode struct {
 		Buyer []struct {
@@ -232,7 +261,7 @@ func QueryBuyerData(ID string) *BuyerHistoryDTO {
 		} `json:"recproducts"`
 	}
 
-	resp, err := txn.Query(context.Background(), query)
+	resp, err := txn.QueryWithVars(context.Background(), query, map[string]string{"$BID": ID})
 	if err != nil {
 		log.Println(err)
 		return nil

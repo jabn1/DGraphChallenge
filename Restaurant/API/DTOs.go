@@ -13,10 +13,10 @@ type BuyerDTO struct {
 }
 
 type BuyerHistoryDTO struct {
-	Buyer               BuyerDTO         `json:"buyer"`
-	Transactions        []TransactionDTO `json:"transactions"`
-	OtherBuyers         []BuyerDTO       `json:"otherbuyers"`
-	RecommendedProducts []ProductDTO     `json:"recommendedproducts"`
+	Buyer               BuyerDTO         `json:"buyer,omitempty"`
+	Transactions        []TransactionDTO `json:"transactions,omitempty"`
+	OtherBuyers         []BuyerDTO       `json:"otherbuyers,omitempty"`
+	RecommendedProducts []ProductDTO     `json:"recommendedproducts,omitempty"`
 }
 
 type TransactionDTO struct {
