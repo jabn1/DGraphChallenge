@@ -67,22 +67,22 @@ func QueryDateExists(timestamp int64) *DateExistsDTO {
 }
 
 //WriteBusinessDay performs a DGraph mutation to load the data containing buyers, products and transactions pertaining to a day
-func WriteBusinessDay(timestamp int64) bool {
+func WriteBusinessDay(timestamp int64) *Status {
 	client := newClient()
 	if client == nil {
-		return false
+		return nil
 	}
 	txn := client.NewTxn()
 	defer txn.Discard(context.Background())
 
 	dayData := GetDayData(timestamp)
 	if dayData == nil {
-		return false
+		return nil
 	}
 	dayDataJSON, err := json.Marshal(dayData)
 	if err != nil {
 		log.Println(err)
-		return false
+		return nil
 	}
 
 	queryS := fmt.Sprintf(`{ v as var(func: eq(date.value,"%v")) }`, dayData.Date.Value)
@@ -95,16 +95,16 @@ func WriteBusinessDay(timestamp int64) bool {
 	response, err := txn.Do(context.Background(), &dgRequest)
 	if err != nil {
 		log.Println(err)
-		return false
+		return nil
 	}
 
 	if len(response.Uids) == 0 {
 		log.Println(fmt.Sprintf("Error in WriteBusinessDay(%d), the requested date already exists", timestamp))
-		return false
+		return &Status{Success: false}
 	}
 
 	err = txn.Commit(context.Background())
-	return true
+	return &Status{Success: true}
 }
 
 //QueryBuyerList retunrs a list of all buyers with pagination parameters
@@ -182,14 +182,12 @@ func QueryBuyerData(ID string) *BuyerHistoryDTO {
 					  
 			}
 		}
-		otherbuyers(func: eq(transaction.ip,val(IP))){
-		  transaction.ip
-		  transaction.buyer @filter(not eq(buyer.id,val(ID))){
-			buyer.id 
+		otherbuyers(func: has(buyer.id)) {
+			buyer.id @filter(not eq(buyer.id,val(ID)))
 			buyer.name
 			buyer.age
-		  }
-		  }
+			buyer.transactions @filter(eq(transaction.ip,val(IP)))
+		}
 		  recproducts(func: has(transaction.id),first: 5){
 			transaction.buyer @filter(not eq(buyer.id,val(ID)))
 		  transaction.products (first:1){
@@ -202,7 +200,7 @@ func QueryBuyerData(ID string) *BuyerHistoryDTO {
 	query = fmt.Sprintf(query, ID)
 
 	var decode struct {
-		Buyer struct {
+		Buyer []struct {
 			ID           string `json:"buyer.id"`
 			Name         string `json:"buyer.name"`
 			Age          int    `json:"buyer.age"`
@@ -221,13 +219,10 @@ func QueryBuyerData(ID string) *BuyerHistoryDTO {
 			} `json:"buyer.transactions"`
 		} `json:"buyer"`
 		OtherBUyers []struct {
-			IP    string `json:"transaction.ip"`
-			Buyer struct {
-				ID   string `json:"buyer.id"`
-				Name string `json:"buyer.name"`
-				Age  int    `json:"buyer.age"`
-			} `json:"otherbuyers"`
-		}
+			ID   string `json:"buyer.id"`
+			Name string `json:"buyer.name"`
+			Age  int    `json:"buyer.age"`
+		} `json:"otherbuyers"`
 		RecProducts []struct {
 			Products []struct {
 				ID    string `json:"product.id"`
@@ -248,5 +243,59 @@ func QueryBuyerData(ID string) *BuyerHistoryDTO {
 		return nil
 	}
 
-	return nil
+	//mapping transactions
+	var transactions []TransactionDTO
+	for _, respbuyer := range decode.Buyer {
+		for _, resptrans := range respbuyer.Transactions {
+			var products []ProductDTO
+			for _, respprod := range resptrans.Products {
+				products = append(products, ProductDTO{
+					ID:    respprod.ID,
+					Name:  respprod.Name,
+					Price: respprod.Price,
+				})
+			}
+			transactions = append(transactions, TransactionDTO{
+				ID:       resptrans.ID,
+				IP:       resptrans.IP,
+				Device:   resptrans.Device,
+				Date:     resptrans.Date.Value,
+				Products: products,
+			})
+		}
+	}
+
+	//mapping other buyers
+	var otherbuyers []BuyerDTO
+	for _, respotherbuyer := range decode.OtherBUyers {
+		otherbuyers = append(otherbuyers, BuyerDTO{
+			ID:   respotherbuyer.ID,
+			Name: respotherbuyer.Name,
+			Age:  respotherbuyer.Age,
+		})
+	}
+
+	var recproducts []ProductDTO
+	for _, resprecproducts := range decode.RecProducts {
+		for _, product := range resprecproducts.Products {
+			recproducts = append(recproducts, ProductDTO{
+				ID:    product.ID,
+				Name:  product.Name,
+				Price: product.Price,
+			})
+		}
+	}
+
+	buyerHistory := BuyerHistoryDTO{
+		Buyer: BuyerDTO{
+			ID:   decode.Buyer[0].ID,
+			Name: decode.Buyer[0].Name,
+			Age:  decode.Buyer[0].Age,
+		},
+		Transactions:        transactions,
+		OtherBuyers:         otherbuyers,
+		RecommendedProducts: recproducts,
+	}
+
+	return &buyerHistory
 }
