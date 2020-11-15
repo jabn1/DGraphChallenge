@@ -50,7 +50,12 @@ func registerRoutes() http.Handler {
 	return r
 }
 
+func enableCORS(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+}
+
 func loadData(w http.ResponseWriter, r *http.Request) {
+	enableCORS(&w)
 	timestampstring := r.URL.Query().Get("date")
 	var timestamp int64
 	if timestampstring == "" {
@@ -84,6 +89,7 @@ func loadData(w http.ResponseWriter, r *http.Request) {
 }
 
 func getBuyers(w http.ResponseWriter, r *http.Request) {
+	enableCORS(&w)
 	firstString := r.URL.Query().Get("first")
 	offsetString := r.URL.Query().Get("offset")
 
@@ -113,6 +119,7 @@ func getBuyers(w http.ResponseWriter, r *http.Request) {
 }
 
 func getBuyer(w http.ResponseWriter, r *http.Request) {
+	enableCORS(&w)
 	id := r.URL.Query().Get("id")
 	if id == "" {
 		http.Error(w, "Invalid query parameters", 400)
