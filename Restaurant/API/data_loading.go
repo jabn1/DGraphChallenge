@@ -201,5 +201,5 @@ func removeEmpties(input []string) []string {
 
 //UnixToDateData converts a unix timestamp to a string with the date format "2006-01-02"
 func UnixToDate(timestamp int64) string {
-	return time.Unix(timestamp, 0).Format("2006-01-02")
+	return time.Unix(timestamp, 0).UTC().Format("2006-01-02")
 }

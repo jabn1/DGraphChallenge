@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 import Restaurant from '../components/Restaurant.vue'
 import Buyerlist from '../components/Buyerlist.vue'
 import Buyerhistory from '../components/Buyerhistory.vue'
+import Loaddate from '../components/Loaddate.vue'
 
 Vue.use(VueRouter)
 
@@ -22,6 +23,10 @@ const routes = [
   {
     path: '/buyer',
     component: Buyerhistory
+  },
+  {
+    path: '/load',
+    component: Loaddate
   }
 ]
 
