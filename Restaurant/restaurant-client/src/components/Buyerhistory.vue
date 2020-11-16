@@ -1,7 +1,28 @@
 <template>
   <v-container>
+    <!-- Go to other buyer -->
+    <form class="pa-0 ma-0">
+      <v-row class="pa-0 ma-0">
+        <v-col cols="3" class=" pb-0 pl-0" >
+          <v-text-field
+            label="Buyer ID"
+            solo
+            dense
+            v-model="input"
+          ></v-text-field>
+        </v-col >
+        <v-col class=" pb-0">
+          <v-btn v-on:click="goToBuyer">
+            Go
+          </v-btn>
+        </v-col>
+      </v-row>
+
+    </form>
+    <!-- Buyer history -->
     <h1>Buyer History</h1>
-    <div v-if="errored">
+    <div v-if="id === undefined">Please enter a buyer's ID</div>
+    <div v-else-if="errored">
       There was an error loading this page.
     </div>
     <div v-else>
@@ -173,26 +194,43 @@ export default {
       loading: true,
       errored: false,
       page: 1,
-      perPage: 5
+      perPage: 5,
+      input: null
     }
   },
   mounted () {
-    axios
-      .get(' http://localhost:5000/api/buyer?id=' + this.id)
-      .then(response => {
-        this.buyerHistory = response.data
-      })
-      .catch(error => {
-        console.log(error)
-        this.errored = true
-      })
-      .finally(() => {
-        this.loading = false
-      })
+    this.getData()
   },
   watch: {
     $route (to, from) {
       this.id = this.$route.params.id
+      this.loading = true
+      this.errored = false
+      this.getData()
+    }
+  },
+  methods: {
+    goToBuyer: function () {
+      if (this.input !== null && this.input !== undefined && this.input !== '') {
+        this.$router.push('/buyer/' + this.input)
+        this.input = ''
+      }
+    },
+    getData: function () {
+      if (this.id !== undefined) {
+        axios
+          .get(' http://localhost:5000/api/buyer?id=' + this.id)
+          .then(response => {
+            this.buyerHistory = response.data
+          })
+          .catch(error => {
+            console.log(error)
+            this.errored = true
+          })
+          .finally(() => {
+            this.loading = false
+          })
+      }
     }
   }
 

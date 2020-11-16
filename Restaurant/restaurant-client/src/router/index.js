@@ -18,6 +18,10 @@ const routes = [
   {
     path: '/buyer/:id',
     component: Buyerhistory
+  },
+  {
+    path: '/buyer',
+    component: Buyerhistory
   }
 ]
 
