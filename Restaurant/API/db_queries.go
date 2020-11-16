@@ -309,12 +309,16 @@ func QueryBuyerData(ID string) *BuyerHistoryDTO {
 
 	//mapping other buyers
 	var otherbuyers []BuyerDTO
+	obMap := map[string]bool{} //to remove duplicate other buyers
 	for _, respotherbuyer := range decode.OtherBUyers {
-		otherbuyers = append(otherbuyers, BuyerDTO{
-			ID:   respotherbuyer.ID,
-			Name: respotherbuyer.Name,
-			Age:  respotherbuyer.Age,
-		})
+		if !obMap[respotherbuyer.ID] {
+			otherbuyers = append(otherbuyers, BuyerDTO{
+				ID:   respotherbuyer.ID,
+				Name: respotherbuyer.Name,
+				Age:  respotherbuyer.Age,
+			})
+			obMap[respotherbuyer.ID] = true
+		}
 	}
 
 	var recproducts []ProductDTO
