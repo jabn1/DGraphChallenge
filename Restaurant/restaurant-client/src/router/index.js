@@ -13,6 +13,10 @@ const routes = [
     component: Restaurant
   },
   {
+    path: '*',
+    redirect: '/home'
+  },
+  {
     path: '/buyers',
     component: Buyerlist
   },

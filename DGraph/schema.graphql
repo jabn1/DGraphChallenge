@@ -1,0 +1,49 @@
+<buyer.age>: int .
+<buyer.date>: uid .
+<buyer.id>: string @index(exact) .
+<buyer.name>: string .
+<buyer.transactions>: [uid] .
+<buyers>: [uid] .
+<date.value>: string @index(exact) .
+<date>: uid .
+<dgraph.graphql.schema>: string .
+<dgraph.graphql.xid>: string @index(exact) @upsert .
+<product.date>: uid .
+<product.id>: string .
+<product.name>: string .
+<product.price>: int .
+<products>: [uid] .
+<transaction.buyer>: uid .
+<transaction.date>: uid .
+<transaction.device>: string .
+<transaction.id>: string .
+<transaction.ip>: string @index(exact) .
+<transaction.products>: [uid] .
+<transactions>: [uid] .
+type <dgraph.graphql> {
+	dgraph.graphql.schema
+	dgraph.graphql.xid
+}
+type <buyer> {
+    buyer.id
+    buyer.date
+    buyer.name
+    buyer.age
+    buyer.transactions
+}
+type <product> {
+    product.id
+    product.name
+    product.price
+    product.date
+}
+type <transaction> {
+    transaction.id
+    transaction.ip
+    transaction.device
+    transaction.products
+    transaction.date
+}
+type <date> {
+    date.value
+}

@@ -1,6 +1,9 @@
 <template>
   <v-container>
-    <h1>test</h1>
+    <v-row justify="center">
+      <h1>Welcome</h1>
+    </v-row>
+
   </v-container>
 </template>
 
