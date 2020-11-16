@@ -11,6 +11,9 @@ import (
 	"github.com/dgraph-io/dgo/v2"
 	"github.com/dgraph-io/dgo/v2/protos/api"
 
+	"crypto/rand"
+	"math/big"
+
 	"google.golang.org/grpc"
 )
 
@@ -119,9 +122,9 @@ func QueryBuyerList(first int, offset int) *[]BuyerDTO {
 
 	query := `
 	{
-		buyers(func: has(buyer.id),first: %d,offset: %d) {   
-			buyer.id 
-			buyer.name 
+		buyers(func: has(buyer.id),first: %d,offset: %d) {
+			buyer.id
+			buyer.name
 			buyer.age
 		}
 	}
@@ -193,9 +196,9 @@ func QueryBuyerData(ID string) *BuyerHistoryDTO {
 
 	query := `query variables($BID: string)
 	{
-		buyer(func: eq(buyer.id,$BID)) {   
-		  ID AS buyer.id 
-		  buyer.name 
+		buyer(func: eq(buyer.id,$BID)) {
+		  ID AS buyer.id
+		  buyer.name
 		  buyer.age
 		  buyer.transactions{
 			transaction.id
@@ -209,16 +212,16 @@ func QueryBuyerData(ID string) *BuyerHistoryDTO {
 			transaction.date{
 				date.value
 			}
-					  
+
 			}
 		}
-		
+
 
         var(func: has(buyer.id)) @filter(not eq(buyer.id,val(ID)))  {
-            	
+
 
             	 buyer.transactions @filter(eq(transaction.ip,val(IP))) {
-                transaction.ip 
+                transaction.ip
                 OB AS transaction.buyer
               }
 	        }
@@ -228,14 +231,16 @@ func QueryBuyerData(ID string) *BuyerHistoryDTO {
               buyer.age
           }
 
-		  recproducts(func: has(transaction.id),first: 5){
-			transaction.buyer @filter(not eq(buyer.id,val(ID)))
-		  transaction.products (first:1){
+		var(func: uid(OB)) {
+			buyer.transactions {
+				RP AS transaction.products
+			}
+		}
+		recproducts(func: uid(RP), first:1000){
 			product.id
 			product.name
 			product.price
-		  }
-		  }
+		}
 	  }`
 
 	var decode struct {
@@ -263,11 +268,9 @@ func QueryBuyerData(ID string) *BuyerHistoryDTO {
 			Age  int    `json:"buyer.age"`
 		} `json:"otherbuyers"`
 		RecProducts []struct {
-			Products []struct {
-				ID    string `json:"product.id"`
-				Name  string `json:"product.name"`
-				Price int    `json:"product.price"`
-			} `json:"transaction.products"`
+			ID    string `json:"product.id"`
+			Name  string `json:"product.name"`
+			Price int    `json:"product.price"`
 		} `json:"recproducts"`
 	}
 
@@ -315,14 +318,19 @@ func QueryBuyerData(ID string) *BuyerHistoryDTO {
 	}
 
 	var recproducts []ProductDTO
-	for _, resprecproducts := range decode.RecProducts {
-		for _, product := range resprecproducts.Products {
-			recproducts = append(recproducts, ProductDTO{
-				ID:    product.ID,
-				Name:  product.Name,
-				Price: product.Price,
-			})
-		}
+	var positions = map[*big.Int]int{}
+	for len(positions) < 10 {
+		random, _ := rand.Int(rand.Reader, big.NewInt(int64(len(decode.RecProducts))))
+		positions[random] = int(random.Int64())
+	}
+
+	for _, position := range positions {
+		product := decode.RecProducts[position]
+		recproducts = append(recproducts, ProductDTO{
+			ID:    product.ID,
+			Name:  product.Name,
+			Price: product.Price,
+		})
 	}
 
 	buyerHistory := BuyerHistoryDTO{
