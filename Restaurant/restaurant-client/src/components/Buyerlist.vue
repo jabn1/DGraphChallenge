@@ -2,7 +2,7 @@
   <v-container>
     <h1>Buyer List</h1>
     <div v-if="errored">An error occurred while loading this page.</div>
-    <div v-if="!loading">
+    <div v-else-if="!loading">
       <v-list>
         <template v-for="(buyer, index) in buyers.slice((this.page - 1) * rowsPerPage, page * rowsPerPage)">
           <v-list-item :key="index" class="ma-0 pa-0">
@@ -17,7 +17,7 @@
                 >
                   <v-col>
                     <v-list-item-action>
-                      <v-btn depressed color="primary" min-width="150px">
+                      <v-btn depressed color="primary" min-width="150px" v-on:click="goToHistory(buyer.id)">
                         ID: {{ buyer.id }}
                       </v-btn>
                     </v-list-item-action>
@@ -49,16 +49,17 @@
 
 import axios from 'axios'
 
-const buyers = [{ id: 'a', name: 'a', age: 4 }]
 export default {
   name: 'Buyerlist',
-  data: () => ({
-    rowsPerPage: 30,
-    page: 1,
-    buyers,
-    loading: true,
-    errored: false
-  }),
+  data () {
+    return {
+      rowsPerPage: 30,
+      page: 1,
+      buyers: [],
+      loading: true,
+      errored: false
+    }
+  },
 
   mounted () {
     axios
@@ -74,6 +75,11 @@ export default {
       .finally(() => {
         this.loading = false
       })
+  },
+  methods: {
+    goToHistory (id) {
+      this.$router.push('/buyer/' + id)
+    }
   }
 }
 </script>
