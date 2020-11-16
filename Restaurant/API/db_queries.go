@@ -212,12 +212,22 @@ func QueryBuyerData(ID string) *BuyerHistoryDTO {
 					  
 			}
 		}
-		otherbuyers(func: has(buyer.id)) {
-			buyer.id @filter(not eq(buyer.id,val(ID)))
-			buyer.name
-			buyer.age
-			buyer.transactions @filter(eq(transaction.ip,val(IP)))
-		}
+		
+
+        var(func: has(buyer.id)) @filter(not eq(buyer.id,val(ID)))  {
+            	
+
+            	 buyer.transactions @filter(eq(transaction.ip,val(IP))) {
+                transaction.ip 
+                OB AS transaction.buyer
+              }
+	        }
+         otherbuyers(func: uid(OB)) {
+              buyer.id
+              buyer.name
+              buyer.age
+          }
+
 		  recproducts(func: has(transaction.id),first: 5){
 			transaction.buyer @filter(not eq(buyer.id,val(ID)))
 		  transaction.products (first:1){
