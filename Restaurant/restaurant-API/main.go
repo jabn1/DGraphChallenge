@@ -9,34 +9,17 @@ import (
 
 	"net/http"
 
+	Model "restaurant/domain_model"
+	DB "restaurant/persistence"
+
 	"github.com/go-chi/chi"
-	restaurant "restaurant.com"
 )
 
 func main() {
 	port := "5000"
 	r := registerRoutes()
-	fmt.Println("Listening on port: " + port)
+	fmt.Println("Listening on port :" + port)
 	log.Fatal(http.ListenAndServe(":"+port, r))
-
-	//_ = restaurant.Entity{UID: "as"} //REMOVE for debugging
-
-	//fmt.Println(restaurant.WriteBusinessDay(1603843200))
-
-	// bl := restaurant.QueryBuyerList(10, 20)
-	// for _, b := range *bl {
-	// 	fmt.Println("Id: " + b.ID + " - " + "Name: " + b.Name + " - " + "Age: " + strconv.Itoa(b.Age))
-	// }
-
-	// buffer := new(bytes.Buffer)
-	// encoder := json.NewEncoder(buffer)
-	// encoder.SetEscapeHTML(false)
-	// encoder.SetIndent("", "  ")
-
-	// encoder.Encode(restaurant.QueryBuyerData("733fb35a"))
-	// fmt.Println(string(buffer.Bytes()))
-	// _ = ioutil.WriteFile("day.json", buffer.Bytes(), 0644)
-
 }
 
 //route declarations
@@ -69,17 +52,17 @@ func loadData(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	exists := restaurant.QueryDateExists(timestamp)
+	exists := DB.QueryDateExists(timestamp)
 	if exists == nil {
 		http.Error(w, "Error while processing request", 500)
 		return
 	}
 	if exists.Exists {
-		json.NewEncoder(w).Encode(restaurant.Status{Success: false})
+		json.NewEncoder(w).Encode(Model.Status{Success: false})
 		return
 	}
 
-	status := restaurant.WriteBusinessDay(timestamp)
+	status := DB.WriteBusinessDay(timestamp)
 	if status == nil {
 		http.Error(w, "Error while processing request", 500)
 		return
@@ -108,7 +91,7 @@ func getBuyers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	buyers := restaurant.QueryBuyerList(first, offset)
+	buyers := DB.QueryBuyerList(first, offset)
 
 	if buyers == nil {
 		http.Error(w, "Error while processing request", 500)
@@ -125,7 +108,7 @@ func getBuyer(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid query parameters", 400)
 		return
 	}
-	buyerdata := restaurant.QueryBuyerData(id)
+	buyerdata := DB.QueryBuyerData(id)
 
 	if buyerdata == nil {
 		http.Error(w, "Error while processing request", 500)

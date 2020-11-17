@@ -1,4 +1,4 @@
-package data
+package domain_model
 
 //these are the DTOs for the API functions
 

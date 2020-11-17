@@ -1,4 +1,4 @@
-package data
+package persistence
 
 //this group of functions is responsible for performing queries and mutations in the DGraph database
 
@@ -13,6 +13,8 @@ import (
 
 	"crypto/rand"
 	"math/big"
+	Data "restaurant/data"
+	Model "restaurant/domain_model"
 
 	"google.golang.org/grpc"
 )
@@ -32,7 +34,7 @@ func newClient() *dgo.Dgraph {
 }
 
 //QueryDateExists is used to check if a day is already loaded into the database
-func QueryDateExists(timestamp int64) *DateExistsDTO {
+func QueryDateExists(timestamp int64) *Model.DateExistsDTO {
 	client := newClient()
 	if client == nil {
 		return nil
@@ -48,7 +50,7 @@ func QueryDateExists(timestamp int64) *DateExistsDTO {
 	}
 	`
 
-	resp, err := txn.QueryWithVars(context.Background(), query, map[string]string{"$DATE": UnixToDate(timestamp)})
+	resp, err := txn.QueryWithVars(context.Background(), query, map[string]string{"$DATE": Data.UnixToDate(timestamp)})
 	if err != nil {
 		log.Println(err)
 		return nil
@@ -65,13 +67,13 @@ func QueryDateExists(timestamp int64) *DateExistsDTO {
 		return nil
 	}
 	if len(decode.Date) != 0 {
-		return &DateExistsDTO{Exists: true}
+		return &Model.DateExistsDTO{Exists: true}
 	}
-	return &DateExistsDTO{Exists: false}
+	return &Model.DateExistsDTO{Exists: false}
 }
 
 //WriteBusinessDay performs a DGraph mutation to load the data containing buyers, products and transactions pertaining to a day
-func WriteBusinessDay(timestamp int64) *Status {
+func WriteBusinessDay(timestamp int64) *Model.Status {
 	client := newClient()
 	if client == nil {
 		return nil
@@ -79,7 +81,7 @@ func WriteBusinessDay(timestamp int64) *Status {
 	txn := client.NewTxn()
 	defer txn.Discard(context.Background())
 
-	dayData := GetDayData(timestamp)
+	dayData := Data.GetDayData(timestamp)
 	if dayData == nil {
 		return nil
 	}
@@ -104,15 +106,15 @@ func WriteBusinessDay(timestamp int64) *Status {
 
 	if len(response.Uids) == 0 {
 		log.Println(fmt.Sprintf("Error in WriteBusinessDay(%d), the requested date already exists", timestamp))
-		return &Status{Success: false}
+		return &Model.Status{Success: false}
 	}
 
 	err = txn.Commit(context.Background())
-	return &Status{Success: true}
+	return &Model.Status{Success: true}
 }
 
 //QueryBuyerList retunrs a list of all buyers with pagination parameters
-func QueryBuyerList(first int, offset int) *[]BuyerDTO {
+func QueryBuyerList(first int, offset int) *[]Model.BuyerDTO {
 	client := newClient()
 	if client == nil {
 		return nil
@@ -150,15 +152,15 @@ func QueryBuyerList(first int, offset int) *[]BuyerDTO {
 		return nil
 	}
 
-	var buyers []BuyerDTO
+	var buyers []Model.BuyerDTO
 	for _, buyer := range decode.Buyers {
-		buyers = append(buyers, BuyerDTO{ID: buyer.ID, Name: buyer.Name, Age: buyer.Age})
+		buyers = append(buyers, Model.BuyerDTO{ID: buyer.ID, Name: buyer.Name, Age: buyer.Age})
 	}
 	return &buyers
 }
 
 //QueryBuyerData returns the buyer history of the buyer with the corresponding entered id
-func QueryBuyerData(ID string) *BuyerHistoryDTO {
+func QueryBuyerData(ID string) *Model.BuyerHistoryDTO {
 	client := newClient()
 	if client == nil {
 		return nil
@@ -191,7 +193,7 @@ func QueryBuyerData(ID string) *BuyerHistoryDTO {
 	}
 
 	if len(buyerDecode.Buyer) == 0 {
-		return &BuyerHistoryDTO{}
+		return &Model.BuyerHistoryDTO{}
 	}
 
 	query := `query variables($BID: string)
@@ -286,18 +288,18 @@ func QueryBuyerData(ID string) *BuyerHistoryDTO {
 	}
 
 	//mapping transactions
-	var transactions []TransactionDTO
+	var transactions []Model.TransactionDTO
 	for _, respbuyer := range decode.Buyer {
 		for _, resptrans := range respbuyer.Transactions {
-			var products []ProductDTO
+			var products []Model.ProductDTO
 			for _, respprod := range resptrans.Products {
-				products = append(products, ProductDTO{
+				products = append(products, Model.ProductDTO{
 					ID:    respprod.ID,
 					Name:  respprod.Name,
 					Price: respprod.Price,
 				})
 			}
-			transactions = append(transactions, TransactionDTO{
+			transactions = append(transactions, Model.TransactionDTO{
 				ID:       resptrans.ID,
 				IP:       resptrans.IP,
 				Device:   resptrans.Device,
@@ -308,11 +310,11 @@ func QueryBuyerData(ID string) *BuyerHistoryDTO {
 	}
 
 	//mapping other buyers
-	var otherbuyers []BuyerDTO
+	var otherbuyers []Model.BuyerDTO
 	obMap := map[string]bool{} //to remove duplicate other buyers
 	for _, respotherbuyer := range decode.OtherBUyers {
 		if !obMap[respotherbuyer.ID] {
-			otherbuyers = append(otherbuyers, BuyerDTO{
+			otherbuyers = append(otherbuyers, Model.BuyerDTO{
 				ID:   respotherbuyer.ID,
 				Name: respotherbuyer.Name,
 				Age:  respotherbuyer.Age,
@@ -321,7 +323,7 @@ func QueryBuyerData(ID string) *BuyerHistoryDTO {
 		}
 	}
 
-	var recproducts []ProductDTO
+	var recproducts []Model.ProductDTO
 	var positions = map[*big.Int]int{}
 	for len(positions) < 10 {
 		random, _ := rand.Int(rand.Reader, big.NewInt(int64(len(decode.RecProducts))))
@@ -330,15 +332,15 @@ func QueryBuyerData(ID string) *BuyerHistoryDTO {
 
 	for _, position := range positions {
 		product := decode.RecProducts[position]
-		recproducts = append(recproducts, ProductDTO{
+		recproducts = append(recproducts, Model.ProductDTO{
 			ID:    product.ID,
 			Name:  product.Name,
 			Price: product.Price,
 		})
 	}
 
-	buyerHistory := BuyerHistoryDTO{
-		Buyer: BuyerDTO{
+	buyerHistory := Model.BuyerHistoryDTO{
+		Buyer: Model.BuyerDTO{
 			ID:   decode.Buyer[0].ID,
 			Name: decode.Buyer[0].Name,
 			Age:  decode.Buyer[0].Age,
